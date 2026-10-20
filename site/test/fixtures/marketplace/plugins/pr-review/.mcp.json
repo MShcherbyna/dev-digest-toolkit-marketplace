@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "github-meta": { "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/server.js"], "env": { "GITHUB_TOKEN": "${user_config.github_token}" } }
+  }
+}

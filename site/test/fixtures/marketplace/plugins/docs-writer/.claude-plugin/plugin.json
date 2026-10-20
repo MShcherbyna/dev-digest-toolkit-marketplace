@@ -1,0 +1,9 @@
+{
+  "name": "docs-writer",
+  "displayName": "Docs Writer",
+  "version": "2.0.0",
+  "description": "Writes API reference docs from code comments and reviews markdown for style and broken links.",
+  "author": { "name": "Docs Guild" },
+  "license": "Apache-2.0",
+  "keywords": ["documentation", "docs", "markdown", "документація"]
+}

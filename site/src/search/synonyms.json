@@ -1,0 +1,20 @@
+{
+  "$comment": "Each group is a set of interchangeable search terms. Ukrainian entries may be stems: a query word that starts with a stem of 4+ letters matches the group.",
+  "groups": [
+    ["review", "рев'ю", "ревю", "ревʼю", "перевірк", "code-review"],
+    ["test", "tests", "testing", "тест", "тести", "тестуван"],
+    ["docs", "documentation", "документац", "доки"],
+    ["commit", "commits", "коміт"],
+    ["refactor", "refactoring", "рефактор"],
+    ["security", "безпек", "вразлив"],
+    ["database", "db", "sql", "баз", "бд"],
+    ["deploy", "deployment", "деплой", "розгортан"],
+    ["bug", "bugs", "debug", "баг", "помилк", "дебаг"],
+    ["frontend", "фронтенд"],
+    ["backend", "бекенд"],
+    ["git", "гіт"],
+    ["pull-request", "pr", "пулреквест", "пул-реквест"],
+    ["translate", "translation", "переклад"],
+    ["lint", "linter", "лінтер", "лінт"]
+  ]
+}

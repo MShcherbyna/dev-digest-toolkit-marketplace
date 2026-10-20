@@ -1,0 +1,185 @@
+import type { Kind } from '../types';
+
+const KIND_ONE: Record<Kind, string> = { plugin: 'plugin', skill: 'skill', agent: 'agent', command: 'command', hook: 'hook', mcp: 'MCP server' };
+const KIND_MANY: Record<Kind, string> = { plugin: 'plugins', skill: 'skills', agent: 'agents', command: 'commands', hook: 'hooks', mcp: 'MCP servers' };
+
+const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const monthFmt = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+export const en = {
+  lang: 'en' as 'en' | 'uk',
+  htmlLang: 'en',
+  langName: 'English',
+  siteTitle: 'Catalog',
+
+  kindPlural: KIND_MANY,
+  kindBadge: { plugin: 'Plugin', skill: 'Skill', agent: 'Agent', command: 'Command', hook: 'Hook', mcp: 'MCP' } as Record<Kind, string>,
+  /** Noun for a stat tile under the number: "3" + "plugins". */
+  statLabel: (n: number, kind: Kind) => (n === 1 ? KIND_ONE[kind] : KIND_MANY[kind]),
+  artifacts: (n: number) => `${n} ${n === 1 ? 'artifact' : 'artifacts'}`,
+  formatDate: (iso: string | null) => (iso ? dateFmt.format(new Date(`${iso.slice(0, 10)}T00:00:00Z`)) : '—'),
+  formatMonth: (iso: string | null) => (iso ? monthFmt.format(new Date(`${iso.slice(0, 7)}-01T00:00:00Z`)) : 'Undated'),
+
+  app: {
+    skip: 'Skip to content',
+    brand: 'Catalog',
+    brandHome: 'Catalog home',
+    searchPlaceholder: 'Search the catalog…',
+    searchLabel: 'Search the catalog',
+    whatsNew: "What's new",
+    start: 'Get started',
+    palette: 'Quick jump (⌘K)',
+    lightTheme: 'Light theme',
+    darkTheme: 'Dark theme',
+    language: 'Language',
+    loadErrorTitle: 'Could not load the catalog',
+    retry: 'Try again',
+    howToConnect: 'How to add the marketplace',
+    rss: 'RSS',
+  },
+
+  home: {
+    eyebrow: 'Marketplace of plugins · skills · agents',
+    title1: 'Find the artifact you need',
+    title2: 'and install it with one copy-paste',
+    lead: 'Search across descriptions, frontmatter and the text of skills, agents and commands. No backend: the catalog is built in CI.',
+    placeholder: 'Describe what you need, e.g. “skill for PR review”',
+    emptyTitle: 'No plugins yet',
+    emptyText: 'Add the first plugin and it shows up here after the next catalog build in CI.',
+    emptyCta: 'Get started',
+    statsLabel: 'Catalog stats',
+    updated: (date: string) => `updated ${date}`,
+    whatsNew: "What's new",
+    allReleases: 'All releases →',
+    newPlugin: 'New plugin in the catalog',
+    update: 'Update',
+    browse: 'Browse by type',
+  },
+
+  search: {
+    filters: 'Filters',
+    reset: 'Reset',
+    show: (n: number) => `Show${n ? ` (${n})` : ''}`,
+    hide: 'Hide',
+    type: 'Type',
+    keywords: 'Keywords',
+    author: 'Author',
+    resultsFor: (q: string) => `Results for “${q}”`,
+    browse: 'Browse the catalog',
+    titleFor: (q: string) => `Search: ${q}`,
+    relaxed: ' · not every word matched',
+    sort: 'Sort',
+    relevance: 'Relevance',
+    name: 'Name',
+    updated: 'Recently updated',
+    fromQuery: 'Filter from your query:',
+    removeFilter: (label: string) => `Remove the “${label}” filter`,
+    noResultsFor: (q: string) => `Nothing found for “${q}”`,
+    noResults: 'Nothing found',
+    noResultsHint: 'Try another word or a synonym, or reset the filters.',
+    resetAll: 'Reset search and filters',
+  },
+
+  card: {
+    inPlugin: (plugin: string) => `in plugin ${plugin}`,
+    noDescription: 'No description',
+    copyInstall: 'Copy install',
+    copied: 'Copied ✓',
+    installsWith: (install: string, item: string, plugin: string) => `${install} (${item} is installed with the ${plugin} plugin)`,
+    open: 'Open',
+  },
+
+  toast: {
+    copied: 'Copied to clipboard',
+    failed: 'Could not copy, select the text by hand',
+  },
+
+  plugin: {
+    back: '← Back',
+    source: 'Source on GitHub ↗',
+    website: 'Website ↗',
+    contents: "What's inside",
+    runs: 'What it runs',
+    hook: 'Hook',
+    mcp: 'MCP',
+    settings: 'Settings',
+    deps: 'Dependencies',
+    readme: 'README',
+    history: 'Version history',
+    firstVersion: 'First version in the catalog',
+    noNotes: 'No notes',
+    updated: (date: string) => `updated ${date}`,
+  },
+
+  component: {
+    catalog: 'Catalog',
+    breadcrumbs: 'Breadcrumbs',
+    tools: 'Tools / permissions',
+    file: 'File on GitHub ↗',
+    installNote: (kind: string) => `This ${kind.toLowerCase()} is installed with the plugin`,
+    config: 'Configuration',
+    frontmatter: 'Frontmatter',
+    docs: 'Documentation',
+  },
+
+  whatsNew: {
+    title: "What's new",
+    back: '← Home',
+    subscribe: 'Subscribe · RSS',
+    added: 'new plugin',
+    updated: 'update',
+    pluginAdded: 'Plugin added to the catalog.',
+    noNotes: 'No notes.',
+    more: 'Show more',
+    less: 'Show less',
+    emptyTitle: 'No releases yet',
+    emptyText: 'The feed is built from git tags',
+    emptyText2: 'and the plugins’ CHANGELOG.md.',
+  },
+
+  start: {
+    title: 'How to add the marketplace',
+    back: '← Home',
+    lead: 'Add the marketplace as a source first, then install the plugins you need. Commands work in a Claude Code session or in a terminal.',
+    where: 'Where to run commands',
+    session: 'In a Claude Code session',
+    terminal: 'In a terminal',
+    step1: 'Add the marketplace',
+    step1Desc: 'Registers the catalog repository as a plugin source.',
+    step2: 'Install a plugin',
+    step2Desc: 'Pick a plugin and the command fills in its name.',
+    pluginLabel: 'Plugin',
+    step3: 'Keep it updated',
+    step3Desc: (name: string) => `Auto-update is off by default for third-party marketplaces. Turn it on: /plugin → Marketplaces → ${name} → Enable auto-update. Or update by hand:`,
+    reload1: 'After updating, run',
+    reload2: '.',
+    step4: 'For teams',
+    step4Desc: 'Commit this file to your project as .claude/settings.json and the marketplace and plugin are set up for everyone who trusts the project folder.',
+    step5: 'Private access',
+    https: 'Claude Code uses your git credentials. For HTTPS:',
+    ssh: 'For SSH: a key in ssh-agent and github.com in known_hosts.',
+    noteStrong: 'marketplace update vs plugin update.',
+    noteText: 'The first refreshes the list of plugins in the source, the second updates the code of an installed plugin.',
+    copy: 'Copy',
+    copyTitle: 'Copy',
+  },
+
+  notFound: {
+    title: 'Not found',
+    page: 'Page not found',
+    plugin: 'Plugin not found',
+    artifact: 'Artifact not found',
+    text: 'It may have been renamed or removed from the catalog.',
+    toSearch: 'Go to search',
+    home: 'Home',
+  },
+
+  palette: {
+    label: 'Jump to an artifact',
+    placeholder: 'Jump to an artifact…',
+    plugin: 'plugin',
+    empty: 'Nothing found',
+  },
+};
+
+export type Messages = typeof en;

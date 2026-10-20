@@ -233,6 +233,11 @@ function checkManifest(root, plugin) {
       error(where, `"homepage" is not a valid URL, the plugin would fail to load`);
     }
   }
+  // The catalog site searches keywords; Ukrainian queries rely on them because descriptions are in English.
+  if (!('keywords' in manifest)) warn(where, '"keywords" is missing; add English and Ukrainian search terms');
+  else if (!Array.isArray(manifest.keywords) || manifest.keywords.some((k) => !isNonEmptyString(k))) {
+    error(where, '"keywords" must be an array of non-empty strings');
+  } else if (manifest.keywords.length === 0) warn(where, '"keywords" is empty; add English and Ukrainian search terms');
   if ('repository' in manifest && typeof manifest.repository !== 'string') {
     error(where, '"repository" must be a string');
   }

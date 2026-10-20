@@ -1,6 +1,6 @@
 # Специфікація: сайт-каталог маркетплейсу на GitHub Pages
 
-Статус: узгоджено, готово до реалізації · Дата: 2026-10-20
+Статус: реалізовано в `site/` · Дата: 2026-10-20 · Дизайн: [docs/design/Catalog.dc.html](../design/Catalog.dc.html)
 
 ## 1. Мета
 
@@ -34,38 +34,45 @@
 ```
 push у main ──► .github/workflows/pages.yml
                  │
-                 ├─ node scripts/build-catalog.mjs
+                 ├─ npm ci   (у site/)
+                 │
+                 ├─ node site/scripts/build-catalog.mjs
                  │     читає .claude-plugin/marketplace.json, plugins/*/…, git-теги
                  │     пише site/public/data/catalog.json
                  │          site/public/data/search-index.json
+                 │          site/public/feed.xml
                  │
-                 ├─ npm ci && npm run build   (у site/)
+                 ├─ vite build → site/dist
                  │
                  └─ actions/upload-pages-artifact → actions/deploy-pages
 ```
 
 ### 3.1 Розміщення в репозиторії
 
+Сайт — окремий самодостатній проєкт у `site/`, який не змішується з маркетплейсом: власний `package.json`, генератор даних, тести й фікстури. Файли маркетплейсу він лише читає. Поза `site/` змінено тільки `pages.yml`, job `site` у `validate.yml`, перевірку `keywords` у валідаторі, `.gitignore` і документацію.
+
 ```
-scripts/
-  build-catalog.mjs        # генератор даних (нова)
-  lib/plugin-files.mjs     # спільний парсинг для валідатора й генератора (винесено з validate-marketplace.mjs)
 site/
   package.json + package-lock.json
-  index.html
-  src/…
-  public/data/             # генерується, у .gitignore
+  index.html, vite.config.ts, playwright.config.ts
+  scripts/build-catalog.mjs   # генератор даних
+  scripts/lib/                # компоненти плагіна, markdown, релізи, feed
+  src/                        # застосунок
+  e2e/                        # Playwright
+  test/fixtures/marketplace/  # демо-маркетплейс для dev і тестів
+  public/data/, public/feed.xml   # генерується, у .gitignore
 .github/workflows/pages.yml
 ```
 
-`parseFrontmatter`, `walk`, `readJson` з `validate-marketplace.mjs` виносимо в `scripts/lib/plugin-files.mjs`, щоб валідатор і генератор розбирали файли однаково. Після цього валідатор має поводитися як раніше (регресійна перевірка: той самий вивід на поточному репозиторії).
+Генератор має власний розбір frontmatter (через `yaml`) і не ділить код із `scripts/validate-marketplace.mjs`: так сайт не залежить від внутрішньої будови валідатора, а валідатор лишається без залежностей.
 
 ### 3.2 Стек
 
 - **Vite + Preact + TypeScript.** Малий бандл, звичні інструменти, без SSR. Залежності — з точними версіями в `package-lock.json`, як того вимагає CONTRIBUTING.
-- **MiniSearch** — повнотекстовий пошук у браузері. Індекс серіалізується під час збірки (`JSON.stringify(miniSearch)`) і завантажується через `MiniSearch.loadJSON`, тож у браузері нічого не індексується.
+- **MiniSearch** — повнотекстовий пошук у браузері. Індекс серіалізується під час збірки і завантажується через `MiniSearch.loadJS`, тож у браузері нічого не індексується. Токенізатор і поля спільні для збірки й браузера: `src/search/index-options.js`.
 - **Markdown** рендериться в HTML під час збірки (`marked`) і санітизується (`sanitize-html`, allowlist тегів). Браузер отримує вже готовий безпечний HTML.
-- Генератор `build-catalog.mjs` використовує лише `node:` модулі плюс `marked`/`sanitize-html`/`minisearch`. Їх ставимо з `site/package-lock.json`, щоб не створювати ще один `package.json` у корені.
+- Генератор `build-catalog.mjs` використовує `node:` модулі плюс `marked`, `sanitize-html`, `minisearch`, `yaml` з `site/package-lock.json`.
+- Шрифти IBM Plex Sans/Mono (з дизайну) — з `@fontsource`, лежать поруч із сайтом, без Google Fonts.
 
 ## 4. Модель даних
 
@@ -156,13 +163,15 @@ site/
    `скіл|скіла|skill|навичк*` → `skill`, `агент*|agent` → `agent`, `хук*|hook` → `hook`, `команд*|command` → `command`, `mcp|сервер*` → `mcp`, `плагін*|plugin` → `plugin`.
 3. **Стоп-слова** (UA + EN) видаляються: `мені, треба, потрібно, для, який, яка, щоб, як, і, та, в, на, з, i, need, a, for, to, the, that, which, …`. Список — у `site/src/search/stopwords.ts`.
 4. **Синоніми** зі `site/src/search/synonyms.json` розширюють запит (`рев'ю ↔ review`, `тести ↔ tests`, `документація ↔ docs`). Файл редагують у PR, як і будь-який інший.
-5. Пошук MiniSearch: `prefix: true`, `fuzzy: 0.2`, `combineWith: 'OR'`, сортування за score. Якщо після кроку 3 не залишилося жодного слова, показуємо всі артефакти вибраного типу.
+5. Пошук MiniSearch: `prefix: true`, `fuzzy: 0.2` (для слів довших за 3 символи), сортування за score. Кожне слово з синонімами — група OR; групи поєднуються через AND. Якщо за AND нічого немає, пошук повторюється з OR, а над результатами пишемо «збіг не з усіма словами». Якщо після кроку 3 не залишилося жодного слова, показуємо всі артефакти вибраного типу.
 
 Приклад: `Мені треба скіл для рев'ю PR` → фільтр `type=skill`, терміни `рев'ю review pr`.
 
-**Фільтри**: чіпи за типом (Усі / Плагіни / Скіли / Агенти / Команди / Хуки / MCP) з кількістю результатів. Фільтр із запиту (крок 2) вмикає відповідний чіп; користувач може його вимкнути.
+**Фільтри** (бічна панель, як у дизайні): тип (кілька), keywords (кілька, OR), автор (один); біля кожного — кількість результатів з урахуванням інших фільтрів. Тип із запиту (крок 2) показується чіпом «Фільтр із запиту» над результатами, і його можна прибрати. Сортування: за релевантністю, за назвою, нещодавно оновлені. На вузьких екранах панель згортається.
 
-**URL-стан**: `#/?q=<запит>&type=<тип>`. Оновлюється з debounce 300 мс через `history.replaceState`. Відкриття такого посилання відновлює запит і фільтр.
+**Палітра ⌘K / Ctrl+K** (з дизайну): швидкий перехід до будь-якого артефакту, керування стрілками й Enter.
+
+**URL-стан**: `#/search?q=<запит>&type=<типи>&kw=<keywords>&author=<автор>&sort=<сортування>&qtype=0` (останнє вимикає тип із запиту). Оновлюється з debounce 300 мс через `history.replaceState`. Відкриття такого посилання відновлює запит і фільтр.
 
 **Картка** містить:
 - бейдж типу (колір + текст, не лише колір);
@@ -274,25 +283,25 @@ site/
 ## 6. Нефункціональні вимоги
 
 - **Продуктивність**: JS-бандл ≤ 60 КБ gzip без даних. `search-index.json` і `catalog.json` завантажуються паралельно; detail-view використовує вже завантажений `catalog.json`. Якщо `catalog.json` перевищить 1 МБ, виносимо `readmeHtml`/`bodyHtml` в окремі файли `data/plugins/<name>.json` (зміна всередині збірки, без нової версії схеми).
-- **Без зовнішніх запитів у рантаймі**: ні CDN, ні шрифтів, ні аналітики, ні GitHub API. CSP через `<meta http-equiv="Content-Security-Policy">`: `default-src 'self'; img-src 'self' https://raw.githubusercontent.com data:; style-src 'self'; script-src 'self'`.
+- **Без зовнішніх запитів у рантаймі**: ні CDN, ні шрифтів, ні аналітики, ні GitHub API. CSP через `<meta http-equiv="Content-Security-Policy">` лише в продакшн-збірці: `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data:; font-src 'self'; connect-src 'self'`. `img-src https:` — бо README плагінів часто містять бейджі з довільних хостів; скриптів і стилів ззовні сайт не завантажує.
 - **Доступність**: керування з клавіатури, видимий фокус, контраст WCAG AA, бейджі типу не розрізняються лише кольором, `aria-live` для кількості результатів.
 - **Адаптивність**: від 360 px, сітка 1/2/3 колонки.
 - **Тема**: світла й темна за `prefers-color-scheme` з перемикачем; вибір зберігається в `localStorage`, а якщо сховище недоступне, береться системна тема.
-- **Мова інтерфейсу**: українська. Усі рядки інтерфейсу — в `site/src/i18n/uk.ts`, щоб англійську можна було додати без рефакторингу.
+- **Мова інтерфейсу**: англійська (основна) і українська, з перемикачем EN/UK у шапці. Мова — частина адреси: англійська версія за `#/…`, українська за `#/uk/…`, тож будь-якою сторінкою в будь-якій мові можна поділитися. Перемикач веде на ту саму сторінку з тим самим запитом і фільтрами. Остання вибрана мова запам'ятовується (`localStorage`) і застосовується лише під час відкриття кореня сайту без hash; явні посилання завжди відкриваються своєю мовою. Рядки — у `site/src/i18n/en.ts` і `uk.ts` (однаковий тип `Messages`); `<html lang>` змінюється разом із мовою. Вміст плагінів (описи, README) показується як є. Пошук розуміє запити обома мовами незалежно від мови інтерфейсу.
 
 ## 7. CI/CD
 
 ### 7.1 `.github/workflows/pages.yml`
 
-- Тригери: `push` у `main` зі змінами в `plugins/**`, `.claude-plugin/**`, `site/**`, `scripts/**`; push тегів `*--v*`; `workflow_dispatch`.
+- Тригери: `push` у `main` зі змінами в `plugins/**`, `.claude-plugin/**`, `site/**`, `pages.yml`; push тегів `*--v*`; `workflow_dispatch`.
 - `permissions: { contents: read, pages: write, id-token: write }`, `concurrency: { group: pages, cancel-in-progress: false }`.
-- Кроки: `actions/checkout` (`fetch-depth: 0`, для дат тегів) → `actions/setup-node` (22) → `npm ci` у `site/` → `node scripts/build-catalog.mjs` → `npm run build` → `actions/configure-pages` → `actions/upload-pages-artifact` (`site/dist`) → `actions/deploy-pages`.
+- Кроки: `actions/checkout` (`fetch-depth: 0`, для дат тегів) → `actions/setup-node` (22) → `actions/configure-pages` (дає `base_url` для Atom-стрічки) → `npm ci` у `site/` → `npm run build` (генератор + Vite) → `actions/upload-pages-artifact` (`site/dist`) → `actions/deploy-pages`.
 - Усі actions закріплені за SHA з коментарем-версією, як у `validate.yml`.
 - У налаштуваннях репозиторію: Settings → Pages → Source: **GitHub Actions**.
 
 ### 7.2 Перевірка в `validate.yml`
 
-Додати job `site`: `build-catalog.mjs` + `npm run build` + юніт-тести (див. [§8](#8-тестування)) на кожен PR. Зламаний генератор чи сайт виявляються до мержу, а не під час деплою. Додати `site` до обов'язкових status checks у ruleset.
+Job `site`: typecheck, юніт-тести, `npm run build` на реальному каталозі та E2E на демо-фікстурі (див. [§8](#8-тестування)) на кожен PR. Зламаний генератор чи сайт виявляються до мержу, а не під час деплою. Додати `site` до обов'язкових status checks у ruleset.
 
 ### 7.3 Поведінка генератора
 
@@ -301,27 +310,28 @@ site/
 
 ## 8. Тестування
 
-- **Генератор** (`node --test`): фікстура `scripts/test/fixtures/marketplace/` з двома плагінами (повний і мінімальний). Перевіряємо `catalog.json`: склад компонентів, stats, release-записи, санітизацію (`<script>` у README зникає), переписування відносних посилань.
+- **Генератор** (`node --test`): фікстура `site/test/fixtures/marketplace/` з трьома плагінами (повний, мінімальний і з залежністю); вона ж — демо-дані для `npm run dev:demo`. Перевіряємо `catalog.json`: склад компонентів, stats, release-записи, санітизацію (`<script>` у README зникає), переписування відносних посилань.
 - **Пошук** (Vitest): обробка запиту (слова типу, стоп-слова, синоніми) і ранжування на фікстурі — кейси з критеріїв приймання §5.1.
-- **E2E** (Playwright, в CI проти `vite preview`): пошук → картка → detail-view → «Назад»; Copy install; deep-link у новій вкладці; порожній каталог.
-- **Регресія валідатора**: після винесення спільного коду `validate-marketplace.mjs` дає той самий вивід на репозиторії й фікстурах.
+- **E2E** (Playwright, desktop і mobile, проти `vite preview`): пошук → картка → detail-view → «Назад»; Copy install; deep-link; порожній каталог; помилка завантаження; відсутність горизонтального скролу й помилок у консолі (зокрема CSP); палітра ⌘K.
 
 ## 9. Ухвалені рішення
 
 1. **Видимість**: репозиторій публічний, сайт теж. Обмежень на публікацію вмісту немає.
 2. **Назва маркетплейсу**: `dev-digest-toolkit`. Сайт бере її з `marketplace.json` і ніде не вписує в код.
 3. **Двомовні keywords**: входять в обсяг.
-   - `CONTRIBUTING.md`, розділ 1: у `plugin.json` указуємо `keywords` англійською та українською, наприклад `["review", "pull-request", "рев'ю", "код-рев'ю"]`.
+   - `docs/PLUGIN-GUIDELINES.md`, розділ 4: у `plugin.json` указуємо `keywords` англійською та українською, наприклад `["review", "pull-request", "рев'ю", "код-рев'ю"]`.
    - `validate-marketplace.mjs`: якщо `keywords` відсутні або порожні, показуємо **попередження** (не помилку). Помилка — якщо `keywords` є, але це не масив непорожніх рядків.
    - Компоненти плагіна успадковують його `keywords` у пошуковому індексі ([§4.3](#43-пошуковий-індекс)).
 4. **Домен**: стандартний `mshcherbyna.github.io/dev-digest-toolkit-marketplace/`, без `CNAME`.
+5. **Мови**: дві версії сайту, англійська основна, українська за `#/uk/…`, перемикач у шапці ([§6](#6-нефункціональні-вимоги)).
 
 ## 10. План реалізації
 
-1. Винести спільний парсинг у `scripts/lib/plugin-files.mjs` + регресійна перевірка валідатора. Додати перевірку `keywords` у валідатор і правило в CONTRIBUTING ([§9](#9-ухвалені-рішення), п. 3).
-2. `build-catalog.mjs` + фікстури + тести генератора.
-3. Каркас `site/`: маршрутизатор, завантаження даних, порожні стани, тема.
-4. Пошук і картки + Copy install (фічі 1, 2).
-5. Detail-view (фіча 3).
-6. Stats, What's new, онбординг (фічі 7, 6, 8).
-7. `pages.yml`, job `site` у `validate.yml`, E2E, увімкнення Pages, оновлення README (посилання на сайт).
+1. ✅ Перевірка `keywords` у валідаторі й правило в `docs/PLUGIN-GUIDELINES.md` ([§9](#9-ухвалені-рішення), п. 3).
+2. ✅ `site/scripts/build-catalog.mjs` + фікстури + тести генератора.
+3. ✅ Каркас `site/`: маршрутизатор, завантаження даних, порожні стани, тема.
+4. ✅ Пошук і картки + Copy install (фічі 1, 2).
+5. ✅ Detail-view (фіча 3).
+6. ✅ Stats, What's new, онбординг (фічі 7, 6, 8).
+7. ✅ `pages.yml`, job `site` у `validate.yml`, E2E, README.
+8. ⏳ Увімкнути Pages (Settings → Pages → Source: GitHub Actions) і додати `site` до обов'язкових status checks.

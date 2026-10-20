@@ -2,6 +2,8 @@
 
 A plugin marketplace for [Claude Code](https://code.claude.com/docs/en/plugins/overview.md).
 
+**Catalog:** [mshcherbyna.github.io/dev-digest-toolkit-marketplace](https://mshcherbyna.github.io/dev-digest-toolkit-marketplace/): search across plugins, skills and agents, copy-paste install commands, release feed. The site lives in [`site/`](site/README.md).
+
 ## Installation
 
 In a Claude Code session:
@@ -57,6 +59,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and the docs:
 - [Plugin Guidelines](docs/PLUGIN-GUIDELINES.md)
 - [Security](docs/SECURITY.md)
 - [Releases](docs/RELEASES.md)
+- [Catalog site](site/README.md): a separate app in `site/`, deployed to GitHub Pages by `.github/workflows/pages.yml`
 
 ### GitHub repository settings
 
