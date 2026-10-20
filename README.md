@@ -59,7 +59,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and the docs:
 - [Plugin Guidelines](docs/PLUGIN-GUIDELINES.md)
 - [Security](docs/SECURITY.md)
 - [Releases](docs/RELEASES.md)
-- [Catalog site](site/README.md): a separate app in `site/`, deployed to GitHub Pages by `.github/workflows/pages.yml`
+- [Catalog site](site/README.md): a separate app in `site/`, checked by `.github/workflows/site.yml` and deployed to GitHub Pages by `.github/workflows/pages.yml`
 
 ### GitHub repository settings
 

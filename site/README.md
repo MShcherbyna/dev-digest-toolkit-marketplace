@@ -43,7 +43,7 @@ npm run dev        # dev server on this repository's real catalog
 
 Before the first `npm run e2e`: `npx playwright install chromium`.
 
-CI (`validate.yml`, job `site`) runs typecheck, unit tests, the real build and E2E on every pull request.
+CI: the **Catalog site** workflow (`.github/workflows/site.yml`) runs on every pull request and push to `main`, separately from **Validate marketplace**. It has two checks: `site-build` (typecheck, unit tests, build against the real catalog) and `site-e2e` (Playwright against the demo fixture; on failure the screenshots are uploaded as the `playwright-results` artifact).
 
 ## Search
 
