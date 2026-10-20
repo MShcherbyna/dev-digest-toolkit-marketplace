@@ -14,7 +14,7 @@ Principle: explore first, standardise later. Rules are added when real plugins n
 2. Add or change a plugin under `plugins/<name>/` following the [Plugin Guidelines](docs/PLUGIN-GUIDELINES.md).
 3. Bump its version: `node scripts/release.mjs bump <name> <major|minor|patch>`.
 4. Run the checks below and open a pull request. The template has the review checklist.
-5. After the merge, tag the release on `main`: `node scripts/release.mjs tag <name> --push`.
+5. Merge. The **Deploy catalog site** workflow tags the release on `main` (`<name>--v<version>`) and redeploys the catalog.
 
 ## Checks
 

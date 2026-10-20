@@ -8,6 +8,7 @@
 //   node scripts/release.mjs tag [<plugin>...] [--push] [--remote origin] [--dry-run]
 //     On a clean main after the merge: creates an annotated <plugin>--v<version> tag for
 //     every plugin whose current version is not tagged yet. --push sends the tags.
+//     CI runs `tag --push` on every merge to main (.github/workflows/pages.yml).
 
 import fs from 'node:fs';
 import {
@@ -59,7 +60,7 @@ function bump(argv) {
 Next:
   1. Edit the CHANGELOG.md section if needed.
   2. git add ${plugin.relDir} && git commit -m "release(${name}): v${next}", then open a pull request.
-  3. After the merge, on main: node scripts/release.mjs tag ${name} --push`);
+  3. After the merge, CI tags ${tagName(name, next)} and redeploys the catalog site.`);
 }
 
 function tag(argv) {
