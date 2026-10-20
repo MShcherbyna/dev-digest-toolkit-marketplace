@@ -58,6 +58,53 @@ The script refuses to run on a branch other than `main`, on a dirty working tree
 - Manually: `/plugin marketplace update dev-digest-toolkit`, then `/reload-plugins`.
 - Auto-update is off by default for third-party marketplaces. Users turn it on in `/plugin` → Marketplaces, teams with `"autoUpdate": true` in `extraKnownMarketplaces`.
 
+## Releasing plugins with dependencies
+
+Some plugins depend on others through a version range in `plugin.json`:
+
+```
+sdd-engineering ──^1.0.0──► engineering-paved-path
+                ──^1.0.0──► research-tools
+                ──^1.0.0──► architecture-review ──^1.0.0──► engineering-paved-path
+```
+
+### How a range resolves
+
+- At install time Claude Code looks for git tags `<plugin>--v<version>` in this repository and installs the highest one that satisfies the range. The `version` in `plugin.json` on `main` is not used for this.
+- Without a matching tag the range resolves to nothing, and installing the dependent plugin fails. A plugin without dependencies installs without tags.
+- So a dependency must be tagged before, or together with, every plugin that depends on it.
+
+### Tag right after the merge
+
+The merged `marketplace.json` lists the new plugins immediately. Until the tags are pushed, plugins with dependencies cannot be installed from GitHub. Tag as soon as the pull request is merged:
+
+```bash
+git checkout main && git pull
+node scripts/release.mjs tag --dry-run   # lists the tags it would create
+node scripts/release.mjs tag --push
+git ls-remote --tags origin | grep -- '--v'   # check the tags reached GitHub
+```
+
+Without plugin names, `tag` creates the missing tags for every plugin and pushes them in one `git push`, so all of them appear at once and the order does not matter. Tags that already exist are skipped; running the command again is safe.
+
+If you tag selected plugins (`release.mjs tag <plugin> --push`), each run pushes separately. Then tag in dependency order, leaves first:
+
+1. `engineering-paved-path`, `research-tools`
+2. `architecture-review`
+3. `sdd-engineering`
+
+Check the result from a clean profile: `claude plugin install sdd-engineering@dev-digest-toolkit` must install all four plugins.
+
+### Changing a dependency
+
+| Change in the dependency | What to do |
+|---|---|
+| `minor` or `patch`, e.g. `engineering-paved-path` 1.1.0 | Usual flow: bump, pull request, tag. `^1.0.0` picks 1.1.0 up; the dependent plugin does not change. |
+| `major`, e.g. a skill or agent is renamed or removed | `^1.0.0` does not accept 2.0.0, so users of the dependent plugin stay on 1.x. In the same pull request bump the dependent plugin (`major`, since its range changes) to `^2.0.0`, then tag both. |
+| `tag` prints `already exists, skipping` | The version was not bumped, so nothing is released. |
+
+Dependents refer to skills and agents by namespaced name (`engineering-paved-path:zod`, `research-tools:researcher`), so renaming or removing one is a `major` change for the dependency.
+
 ## Rollback
 
 Because a lower version is never an update, a rollback is a roll-forward: the old contents are released under a new, higher version.
