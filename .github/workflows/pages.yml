@@ -1,6 +1,9 @@
 name: Deploy catalog site
 
-# Builds site/ (catalog data from plugins/ + the Vite app) and publishes it to GitHub Pages.
+# Tags new plugin releases (<plugin>--v<version>), then builds site/ (catalog data from
+# plugins/ + the Vite app) and publishes it to GitHub Pages. Everything runs from main:
+# the github-pages environment only accepts deployments from main, and tags pushed with
+# GITHUB_TOKEN do not start other workflow runs.
 # One-time setup: Settings → Pages → Source: GitHub Actions.
 
 on:
@@ -11,7 +14,6 @@ on:
       - '.claude-plugin/**'
       - 'site/**'
       - '.github/workflows/pages.yml'
-    tags: ['*--v*']
   workflow_dispatch:
 
 permissions:
@@ -24,7 +26,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  tag:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # existing tags decide which versions are new
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+
+      - name: Tag new plugin versions
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          node scripts/release.mjs tag --push
+
   build:
+    needs: tag # a manual run from another branch skips every job
     runs-on: ubuntu-latest
     defaults:
       run:

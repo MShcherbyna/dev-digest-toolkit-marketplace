@@ -125,17 +125,43 @@ export function writeJsonFile(file, data, indent = '  ') {
   fs.writeFileSync(file, `${JSON.stringify(data, null, indent)}\n`);
 }
 
-// Changes only the "version" value so the rest of plugin.json keeps its formatting.
-// Falls back to a full rewrite when "version" appears more than once (e.g. in dependencies).
+// Changes only the top-level "version" value so the rest of plugin.json keeps its formatting.
+// "version" keys nested deeper (e.g. dependency ranges) are left alone.
+// Falls back to a full rewrite when there is no top-level "version" string to replace.
 export function setManifestVersion(file, version) {
   const text = fs.readFileSync(file, 'utf8');
-  const pattern = /("version"\s*:\s*")[^"]*(")/g;
-  if ((text.match(pattern) ?? []).length === 1) {
-    fs.writeFileSync(file, text.replace(pattern, `$1${version}$2`));
+  const span = topLevelStringValue(text, 'version');
+  if (span) {
+    fs.writeFileSync(file, text.slice(0, span.start) + version + text.slice(span.end));
     return;
   }
   const { data, indent } = readJsonFile(file);
   writeJsonFile(file, { ...data, version }, indent);
+}
+
+// Finds the string value of `key` in the root object of a JSON text: { start, end } of the
+// characters between its quotes, or null when the key is missing or its value is not a string.
+function topLevelStringValue(text, key) {
+  const pair = /"((?:[^"\\]|\\.)*)"\s*:\s*/y;
+  const string = /"((?:[^"\\]|\\.)*)"/y;
+  let depth = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '{' || ch === '[') depth++;
+    else if (ch === '}' || ch === ']') depth--;
+    else if (ch === '"') {
+      pair.lastIndex = i;
+      const m = depth === 1 ? pair.exec(text) : null;
+      if (m && JSON.parse(`"${m[1]}"`) === key) {
+        string.lastIndex = pair.lastIndex;
+        const v = string.exec(text);
+        return v ? { start: pair.lastIndex + 1, end: string.lastIndex - 1 } : null;
+      }
+      string.lastIndex = i;
+      i = string.exec(text) ? string.lastIndex - 1 : text.length; // skip the whole string
+    }
+  }
+  return null;
 }
 
 export function listPlugins() {

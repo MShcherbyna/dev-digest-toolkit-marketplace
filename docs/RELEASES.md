@@ -41,16 +41,21 @@ Edit the changelog section if needed, then commit and open a pull request:
 git add plugins/<plugin> && git commit -m "release(<plugin>): v<version>"
 ```
 
-### 2. Tag on main after the merge
+### 2. Merge: CI tags the release
+
+After the merge, the **Deploy catalog site** workflow ([`pages.yml`](../.github/workflows/pages.yml)) runs on `main`. Its first job runs
 
 ```bash
-git checkout main && git pull
-node scripts/release.mjs tag [<plugin>...] --push [--dry-run]
+node scripts/release.mjs tag --push
 ```
 
-For every plugin (or the ones named), the script creates an annotated tag `<plugin>--v<version>` if that version is not tagged yet. The tag message is the changelog section. This is the same tag format as `claude plugin tag`. It is used by plugin dependency ranges and by the catalog site's "What's new" feed.
+which creates an annotated tag `<plugin>--v<version>` for every plugin whose version is not tagged yet and pushes them all in one `git push`. The tag message is the changelog section. This is the same tag format as `claude plugin tag`. It is used by plugin dependency ranges and by the catalog site's "What's new" feed. The same run then builds and deploys the site, so the new release shows up there too.
 
-The script refuses to run on a branch other than `main`, on a dirty working tree, or when `main` is behind `origin/main`.
+Tags are created only for merged code: a tag pushed from a pull request branch would make an unreviewed version installable through dependency ranges, and after a squash or rebase merge it would point at a commit that is not on `main`.
+
+Check the run in the Actions tab. If the tag job fails (for example, `main` moved on while it ran), rerun the workflow from Actions → **Deploy catalog site** → **Run workflow** on `main`; tags that already exist are skipped.
+
+By hand, as a fallback: on an up-to-date `main`, `node scripts/release.mjs tag [<plugin>...] --push [--dry-run]`. The script refuses to run on a branch other than `main`, on a dirty working tree, or when `main` is behind `origin/main`. A hand-pushed tag does not redeploy the site; run the workflow manually for that.
 
 ### 3. Users get the update
 
@@ -74,20 +79,15 @@ sdd-engineering ──^1.0.0──► engineering-paved-path
 - Without a matching tag the range resolves to nothing, and installing the dependent plugin fails. A plugin without dependencies installs without tags.
 - So a dependency must be tagged before, or together with, every plugin that depends on it.
 
-### Tag right after the merge
+### Tags appear right after the merge
 
-The merged `marketplace.json` lists the new plugins immediately. Until the tags are pushed, plugins with dependencies cannot be installed from GitHub. Tag as soon as the pull request is merged:
+The merged `marketplace.json` lists the new plugins immediately. Until the tags are pushed, plugins with dependencies cannot be installed from GitHub. CI tags every plugin in one push a minute or two after the merge, so all tags appear at once and the order does not matter. Check that they reached GitHub:
 
 ```bash
-git checkout main && git pull
-node scripts/release.mjs tag --dry-run   # lists the tags it would create
-node scripts/release.mjs tag --push
-git ls-remote --tags origin | grep -- '--v'   # check the tags reached GitHub
+git ls-remote --tags origin | grep -- '--v'
 ```
 
-Without plugin names, `tag` creates the missing tags for every plugin and pushes them in one `git push`, so all of them appear at once and the order does not matter. Tags that already exist are skipped; running the command again is safe.
-
-If you tag selected plugins (`release.mjs tag <plugin> --push`), each run pushes separately. Then tag in dependency order, leaves first:
+If you tag by hand and name selected plugins (`release.mjs tag <plugin> --push`), each run pushes separately. Then tag in dependency order, leaves first:
 
 1. `engineering-paved-path`, `research-tools`
 2. `architecture-review`
@@ -99,8 +99,8 @@ Check the result from a clean profile: `claude plugin install sdd-engineering@de
 
 | Change in the dependency | What to do |
 |---|---|
-| `minor` or `patch`, e.g. `engineering-paved-path` 1.1.0 | Usual flow: bump, pull request, tag. `^1.0.0` picks 1.1.0 up; the dependent plugin does not change. |
-| `major`, e.g. a skill or agent is renamed or removed | `^1.0.0` does not accept 2.0.0, so users of the dependent plugin stay on 1.x. In the same pull request bump the dependent plugin (`major`, since its range changes) to `^2.0.0`, then tag both. |
+| `minor` or `patch`, e.g. `engineering-paved-path` 1.1.0 | Usual flow: bump, pull request, merge. `^1.0.0` picks 1.1.0 up; the dependent plugin does not change. |
+| `major`, e.g. a skill or agent is renamed or removed | `^1.0.0` does not accept 2.0.0, so users of the dependent plugin stay on 1.x. In the same pull request bump the dependent plugin (`major`, since its range changes) to `^2.0.0`; CI tags both after the merge. |
 | `tag` prints `already exists, skipping` | The version was not bumped, so nothing is released. |
 
 Dependents refer to skills and agents by namespaced name (`engineering-paved-path:zod`, `research-tools:researcher`), so renaming or removing one is a `major` change for the dependency.
@@ -121,13 +121,11 @@ The script:
 - keeps the full `CHANGELOG.md` history and adds a section that records the rollback;
 - stages the result without committing. It does not change the `marketplace.json` entry.
 
-Then review, commit, open a pull request, and tag after the merge as in a normal release:
+Then review, commit and open a pull request. CI tags the new version after the merge, as in a normal release:
 
 ```bash
 git diff --staged
 git commit -m "release(<plugin>): v<version>, roll back to <target-version>"
-# after the merge, on main:
-node scripts/release.mjs tag <plugin> --push
 ```
 
 If a release is harmful and users must not wait for the rollback PR, tell them to disable the plugin right away with `claude plugin disable <plugin>@dev-digest-toolkit`.

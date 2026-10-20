@@ -19,7 +19,7 @@ There is no backend. Everything that needs processing happens at build time:
    - `public/data/search-index.json`: a serialized [MiniSearch](https://github.com/lucaong/minisearch) index;
    - `public/feed.xml`: an Atom feed of releases.
 2. Vite builds the Preact app into `dist/`. Routing uses the hash (`#/plugin/<name>`), so Pages needs no SPA fallback, and `base: './'` lets the site work under any path.
-3. [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) publishes `dist/` to Pages on every push to `main` that touches `plugins/`, `.claude-plugin/` or `site/`, and on every release tag.
+3. [`.github/workflows/pages.yml`](../.github/workflows/pages.yml) publishes `dist/` to Pages on every push to `main` that touches `plugins/`, `.claude-plugin/` or `site/`. Its first job creates the missing release tags, so the build sees them. Tags are not a trigger: the `github-pages` environment accepts deployments from `main` only.
 
 The page makes no requests outside the site: no CDN, no GitHub API, fonts are bundled. The build adds a strict Content-Security-Policy meta tag.
 
