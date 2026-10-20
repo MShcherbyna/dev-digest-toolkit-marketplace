@@ -138,7 +138,8 @@ export function buildCatalog({ root, repo = null, siteUrl = null, now = new Date
   const byName = new Map(plugins.map((p) => [p.name, p]));
   const allReleases = plugins
     .flatMap((p) => p.releases.map((r) => ({ ...r, displayName: p.displayName })))
-    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '') || a.plugin.localeCompare(b.plugin))
+    // Newest first by tag time; releases known only by date sort after timed ones of that day.
+    .sort((a, b) => (b.time ?? b.date ?? '').localeCompare(a.time ?? a.date ?? '') || a.plugin.localeCompare(b.plugin))
     .slice(0, RELEASES_LIMIT);
 
   const generatedAt = now.toISOString().replace(/\.\d{3}Z$/, 'Z');

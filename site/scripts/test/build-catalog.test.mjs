@@ -72,6 +72,29 @@ test('releases come from CHANGELOG, tags, or an "added" record', () => {
   }
 });
 
+test('releases tagged on the same day sort by tag time, not by plugin name', () => {
+  const dir = gitFixture();
+  try {
+    // Annotated tags take their time from GIT_COMMITTER_DATE. docs-writer sorts first by name
+    // but is tagged earlier, so pr-review must come first.
+    const tag = (name, time) =>
+      execFileSync('git', ['-C', dir, '-c', 'user.name=t', '-c', 'user.email=t@example.com', 'tag', '-a', name, '-m', name], {
+        stdio: 'pipe',
+        env: { ...process.env, GIT_COMMITTER_DATE: time },
+      });
+    tag('docs-writer--v2.0.0', '2026-10-01T09:00:00Z');
+    tag('pr-review--v1.2.0', '2026-10-01T15:30:00Z');
+    const { catalog, feed } = buildCatalog({ root: dir, repo });
+    assert.deepEqual(catalog.releases.slice(0, 2).map((r) => [r.plugin, r.date, r.time]), [
+      ['pr-review', '2026-10-01', '2026-10-01T15:30:00Z'],
+      ['docs-writer', '2026-10-01', '2026-10-01T09:00:00Z'],
+    ]);
+    assert.match(feed, /<updated>2026-10-01T15:30:00Z<\/updated>/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('an empty marketplace still builds', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'catalog-empty-'));
   try {

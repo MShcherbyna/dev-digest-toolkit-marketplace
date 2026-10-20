@@ -10,6 +10,8 @@ export interface Release {
   version: string;
   tag: string | null;
   date: string | null;
+  /** Tag creation time (ISO, UTC); null for releases known only from CHANGELOG.md. */
+  time: string | null;
   kind: 'added' | 'updated';
   summary: string;
   notesHtml: string;

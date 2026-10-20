@@ -60,21 +60,25 @@ export function pluginReleases({ root, pluginName, pluginDir, version, ctx }) {
 
   if (ctx.git) {
     const prefix = `${pluginName}--v`;
-    for (const tag of git(root, ['tag', '--list', `${prefix}*`]).split('\n').filter(Boolean)) {
+    // creatordate is when an annotated tag was made (the commit date for a lightweight tag),
+    // so releases tagged on the same day still sort by time.
+    const refs = git(root, ['for-each-ref', '--format=%(refname:short)%09%(creatordate:iso-strict)', `refs/tags/${prefix}*`]);
+    for (const [tag, created] of refs.split('\n').filter(Boolean).map((l) => l.split('\t'))) {
       const v = tag.slice(prefix.length);
-      const [date, subject] = git(root, ['log', '-1', '--format=%cs%x09%s', tag]).split('\t');
+      const time = created ? new Date(created).toISOString().replace(/\.\d{3}Z$/, 'Z') : null;
       const section = notesFor(v);
-      byVersion.set(v, { version: v, tag, date: date || section?.date || null, notesHtml: section?.markdown ? toHtml(section.markdown) : toHtml(subject ?? '') });
+      const notes = section?.markdown || git(root, ['log', '-1', '--format=%s', tag]);
+      byVersion.set(v, { version: v, tag, date: time?.slice(0, 10) || section?.date || null, time, notesHtml: toHtml(notes) });
     }
   }
   for (const section of changelog) {
     if (byVersion.has(section.version)) continue;
-    byVersion.set(section.version, { version: section.version, tag: null, date: section.date, notesHtml: toHtml(section.markdown) });
+    byVersion.set(section.version, { version: section.version, tag: null, date: section.date, time: null, notesHtml: toHtml(section.markdown) });
   }
   if (byVersion.size === 0) {
     const relDir = path.relative(root, pluginDir);
     const added = ctx.git ? git(root, ['log', '--diff-filter=A', '--format=%cs', '--reverse', '--', relDir]).split('\n')[0] : '';
-    byVersion.set(version, { version, tag: null, date: added || null, notesHtml: '' });
+    byVersion.set(version, { version, tag: null, date: added || null, time: null, notesHtml: '' });
   }
 
   const releases = [...byVersion.values()].sort((a, b) => compareSemver(b.version, a.version));

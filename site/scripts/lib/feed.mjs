@@ -8,7 +8,7 @@ export function atomFeed({ marketplace, releases, siteUrl, generatedAt }) {
   const entries = releases
     .map((r) => {
       const link = `${base}#/plugin/${encodeURIComponent(r.plugin)}`;
-      const updated = r.date ? `${r.date}T00:00:00Z` : generatedAt;
+      const updated = r.time ?? (r.date ? `${r.date}T00:00:00Z` : generatedAt);
       return `  <entry>
     <id>urn:${escape(marketplace.name)}:${escape(r.plugin)}:${escape(r.version)}</id>
     <title>${escape(r.displayName)} v${escape(r.version)}</title>
