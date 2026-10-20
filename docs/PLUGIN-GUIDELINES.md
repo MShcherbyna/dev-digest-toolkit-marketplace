@@ -24,6 +24,7 @@ plugins/<name>/
 - `CLAUDE.md` at the plugin root is **not loaded** by Claude Code. Put instructions in a skill.
 - No top-level `bin/`: claude.ai org sync rejects plugins that have one. Put executables in `scripts/`.
 - A plugin is self-contained. Installed plugins are copied to `~/.claude/plugins/cache/`, and files outside the plugin directory (`../shared`) are not copied. No symlinks pointing outside the plugin, no Git LFS, no submodules.
+- A script needed by several plugins is copied into each of them. Mark every copy with the comment `This file is shared verbatim by <plugins>`; the linter fails when copies with the same file name differ.
 - Keep plugins small and focused: users install only what they need, and less context is spent.
 
 ## 2. Naming
