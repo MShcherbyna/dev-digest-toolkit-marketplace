@@ -14,8 +14,13 @@ function git(root, args) {
   }
 }
 
+/**
+ * True only when `root` is the top of a git work tree. A marketplace nested inside another
+ * repository (the demo fixture) must not pick up that repository's tags and commit dates.
+ */
 export function isGitRepo(root) {
-  return git(root, ['rev-parse', '--is-inside-work-tree']) === 'true';
+  const top = git(root, ['rev-parse', '--show-toplevel']);
+  return top !== '' && fs.realpathSync(top) === fs.realpathSync(root);
 }
 
 function compareSemver(a, b) {

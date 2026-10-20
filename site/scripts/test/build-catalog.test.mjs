@@ -113,3 +113,18 @@ test('custom agents/commands paths replace the defaults, custom skills add to th
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('a marketplace nested in another repository ignores that repository history', () => {
+  const outer = gitFixture();
+  try {
+    // gitFixture committed and tagged the whole tree; build from a subdirectory copy inside it.
+    const nested = path.join(outer, 'nested');
+    fs.cpSync(fixture, nested, { recursive: true });
+    const { catalog } = buildCatalog({ root: nested });
+    assert.equal(catalog.commit, null);
+    const commit = catalog.plugins.find((p) => p.name === 'commit-helper');
+    assert.deepEqual(commit.releases.map((r) => [r.tag, r.date]), [[null, null]]);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
