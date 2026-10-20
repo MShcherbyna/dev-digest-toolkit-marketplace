@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "dev-digest-toolkit",
+  "description": "Claude Code plugins from the Dev Digest toolkit.",
+  "owner": {
+    "name": "Maksym Shcherbyna",
+    "url": "https://github.com/MShcherbyna"
+  },
+  "plugins": []
+}

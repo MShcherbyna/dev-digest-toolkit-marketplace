@@ -1,0 +1,5 @@
+# Default owner for everything in the repository.
+*    @MShcherbyna
+
+# Per-plugin owners. Add one line for every new plugin:
+# /plugins/<plugin-name>/    @owner
