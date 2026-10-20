@@ -2,6 +2,10 @@
 
 All notable changes to this plugin are documented here. Versions follow [SemVer](https://semver.org).
 
+## [1.0.1] - 2026-10-20
+
+- The plugin description now lists the `design` skill.
+
 ## [1.0.0] - 2026-10-20
 
 - First release: a project-agnostic port of a production Spec Driven Development setup (see "Origin" in the README).
