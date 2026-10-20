@@ -2,6 +2,10 @@
 
 All notable changes to this plugin are documented here. Versions follow [SemVer](https://semver.org).
 
+## [1.0.2] - 2026-10-20
+
+- README: how to turn on auto-update and update by hand.
+
 ## [1.0.1] - 2026-10-20
 
 - The plugin description now lists the `design` skill.

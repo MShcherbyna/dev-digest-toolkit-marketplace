@@ -1,6 +1,6 @@
 {
   "name": "sdd-engineering",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Spec Driven Development workflow: spec-creator, implementation-planner, implementer, check-runner and plan-verifier agents, the /run-plan orchestrator with a review fix loop, /workflow-retro to analyse a finished run, and the design skill that picks the visual source of truth for UI work.",
   "author": { "name": "Maksym Shcherbyna", "url": "https://github.com/MShcherbyna" },
   "license": "MIT",

@@ -52,6 +52,8 @@ The three dependencies install automatically: [`engineering-paved-path`](../engi
 
 Optional but recommended: add `.claude/sdd-engineering.json` to your project ([§5](#5-configuration)) so the agents know your modules and check commands, and add your `runsDir` (default `.claude/sdd-runs/`) to `.gitignore`.
 
+**Updates.** Auto-update is off by default for this marketplace: turn it on in `/plugin` → Marketplaces → `dev-digest-toolkit` → Enable auto-update, and new versions apply after `/reload-plugins` or a restart. To update by hand: `/plugin marketplace update dev-digest-toolkit`, then `/reload-plugins`. `/plugin` shows the installed version; the [catalog](https://mshcherbyna.github.io/dev-digest-toolkit-marketplace/) lists what changed.
+
 ## 3. Quick start
 
 A feature end to end, in a project with `.claude/sdd-engineering.json`:
