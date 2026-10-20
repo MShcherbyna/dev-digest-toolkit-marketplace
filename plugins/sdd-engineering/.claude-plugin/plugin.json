@@ -1,0 +1,15 @@
+{
+  "name": "sdd-engineering",
+  "version": "1.0.0",
+  "description": "Spec Driven Development workflow: spec-creator, implementation-planner, implementer, check-runner and plan-verifier agents, the /run-plan orchestrator with a review fix loop, and /workflow-retro to analyse a finished run.",
+  "author": { "name": "Maksym Shcherbyna", "url": "https://github.com/MShcherbyna" },
+  "license": "MIT",
+  "homepage": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace/tree/main/plugins/sdd-engineering",
+  "repository": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace",
+  "keywords": ["sdd", "spec-driven-development", "spec", "specification", "planning", "implementation-plan", "workflow", "agents", "code-review", "retro", "специфікація", "планування", "план реалізації", "розробка за специфікацією", "агенти", "ретроспектива"],
+  "dependencies": [
+    { "name": "engineering-paved-path", "version": "^1.0.0" },
+    { "name": "research-tools", "version": "^1.0.0" },
+    { "name": "architecture-review", "version": "^1.0.0" }
+  ]
+}

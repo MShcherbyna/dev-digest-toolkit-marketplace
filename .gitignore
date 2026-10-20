@@ -12,3 +12,6 @@ site/public/data/
 site/public/feed.xml
 site/test-results/
 site/playwright-report/
+
+# claude plugin eval results
+plugins/*/evals/results/

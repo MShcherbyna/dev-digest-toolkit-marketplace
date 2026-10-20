@@ -50,7 +50,18 @@ Claude Code uses your existing git credentials; there is no token field. For HTT
 
 | Plugin | Description |
 |---|---|
-| _none yet_ | |
+| [architecture-review](plugins/architecture-review/README.md) | Read-only `architecture-reviewer` agent: checks changed code against layering, module and framework boundary rules. Depends on `engineering-paved-path`. |
+| [engineering-paved-path](plugins/engineering-paved-path/README.md) | Engineering skills: React, Next.js, Fastify, Drizzle, PostgreSQL, TypeScript, Zod, testing, architecture, security, engineering insights. |
+| [research-tools](plugins/research-tools/README.md) | Read-only `researcher` agent: answers questions from the repository or the web with evidence and sources. |
+| [sdd-engineering](plugins/sdd-engineering/README.md) | Spec Driven Development: `spec → plan → implement → review → verify` agents, `/run-plan` and `/workflow-retro`. Installs the three plugins above. |
+
+```
+sdd-engineering ──► engineering-paved-path
+                ──► research-tools
+                ──► architecture-review ──► engineering-paved-path
+```
+
+To get the whole workflow, install `sdd-engineering`; its dependencies are installed automatically.
 
 ## Development
 

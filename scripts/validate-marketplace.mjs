@@ -415,6 +415,35 @@ function checkCodeowners(root, plugins) {
   }
 }
 
+// --- shared files -----------------------------------------------------------
+
+// A plugin is self-contained, so a script used by several plugins is copied
+// into each of them. Copies carry the SHARED_MARKER comment and must stay
+// byte-identical across plugins, file by file name.
+const SHARED_MARKER = 'This file is shared verbatim by';
+
+function checkSharedFiles(root, plugins) {
+  const byName = new Map();
+  for (const plugin of plugins) {
+    if (!fs.existsSync(plugin.dir)) continue;
+    walk(plugin.dir, (file, entry) => {
+      if (!entry.isFile() || !SCRIPT_EXT.test(entry.name)) return;
+      const text = fs.readFileSync(file, 'utf8');
+      if (!text.includes(SHARED_MARKER)) return;
+      if (!byName.has(entry.name)) byName.set(entry.name, []);
+      byName.get(entry.name).push({ file, text });
+    });
+  }
+  for (const [name, copies] of byName) {
+    const [first, ...rest] = copies;
+    for (const copy of rest) {
+      if (copy.text !== first.text) {
+        error(rel(root, copy.file), `shared file differs from ${rel(root, first.file)}; copy ${name} verbatim to every plugin`);
+      }
+    }
+  }
+}
+
 // --- version bump -----------------------------------------------------------
 
 function git(root, args) {
@@ -468,6 +497,7 @@ function main() {
       checkFiles(root, plugin);
     }
     checkCodeowners(root, plugins);
+    checkSharedFiles(root, plugins);
     if (args.base) checkVersionBump(root, plugins, manifests, args.base);
     console.log(`Checked marketplace "${mp.name ?? '?'}" with ${mp.plugins.length} plugin(s).`);
   }
