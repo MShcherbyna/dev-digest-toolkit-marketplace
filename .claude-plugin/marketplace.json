@@ -6,5 +6,52 @@
     "name": "Maksym Shcherbyna",
     "url": "https://github.com/MShcherbyna"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "architecture-review",
+      "source": "./plugins/architecture-review",
+      "description": "Read-only architecture-reviewer agent that checks changed code against layering, module and framework boundary rules.",
+      "category": "code-review",
+      "tags": [
+        "architecture",
+        "review",
+        "onion"
+      ]
+    },
+    {
+      "name": "engineering-paved-path",
+      "source": "./plugins/engineering-paved-path",
+      "description": "Engineering skills for React, Next.js, Fastify, Drizzle, PostgreSQL, TypeScript, Zod, testing, architecture and security.",
+      "category": "development",
+      "tags": [
+        "react",
+        "nextjs",
+        "fastify",
+        "typescript",
+        "security"
+      ]
+    },
+    {
+      "name": "research-tools",
+      "source": "./plugins/research-tools",
+      "description": "Read-only researcher agent that answers questions from the repository or the web with evidence and sources.",
+      "category": "productivity",
+      "tags": [
+        "research",
+        "read-only"
+      ]
+    },
+    {
+      "name": "sdd-engineering",
+      "source": "./plugins/sdd-engineering",
+      "description": "Spec Driven Development workflow: spec, plan, implement, review and verify agents, the /run-plan orchestrator and a workflow retro.",
+      "category": "development",
+      "tags": [
+        "sdd",
+        "spec",
+        "workflow",
+        "agents"
+      ]
+    }
+  ]
 }

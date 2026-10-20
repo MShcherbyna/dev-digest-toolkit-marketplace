@@ -1,0 +1,11 @@
+{
+  "name": "architecture-review",
+  "version": "1.0.0",
+  "description": "A read-only architecture-reviewer agent that checks layering, module and feature boundaries of changed code against your project's rules and the engineering-paved-path skills.",
+  "author": { "name": "Maksym Shcherbyna", "url": "https://github.com/MShcherbyna" },
+  "license": "MIT",
+  "homepage": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace/tree/main/plugins/architecture-review",
+  "repository": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace",
+  "keywords": ["architecture", "review", "code-review", "onion-architecture", "layering", "boundaries", "архітектура", "рев'ю", "перевірка коду", "шари"],
+  "dependencies": [{ "name": "engineering-paved-path", "version": "^1.0.0" }]
+}

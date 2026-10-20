@@ -1,0 +1,13 @@
+{
+  "name": "engineering-paved-path",
+  "version": "1.0.0",
+  "description": "Paved-path engineering skills for TypeScript web stacks: React, Next.js, Fastify, Drizzle, PostgreSQL, Zod, onion architecture, testing, security and module-local insights.",
+  "author": { "name": "Maksym Shcherbyna", "url": "https://github.com/MShcherbyna" },
+  "license": "MIT",
+  "homepage": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace/tree/main/plugins/engineering-paved-path",
+  "repository": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace",
+  "keywords": [
+    "react", "nextjs", "fastify", "drizzle", "postgresql", "typescript", "zod", "testing", "security", "architecture", "onion-architecture", "best-practices",
+    "архітектура", "тестування", "безпека", "найкращі-практики", "бекенд", "фронтенд"
+  ]
+}

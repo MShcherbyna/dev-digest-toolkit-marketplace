@@ -1,0 +1,27 @@
+{
+  "specsDir": "specs",
+  "plansDir": "docs/plans",
+  "runsDir": ".claude/sdd-runs",
+  "retrosDir": "docs/retros",
+  "designDir": "design",
+  "architectureDoc": null,
+  "modules": [
+    {
+      "name": "api",
+      "path": "apps/api",
+      "insights": "apps/api/INSIGHTS.md",
+      "specsDir": "apps/api/specs",
+      "checks": ["npm --prefix apps/api run typecheck", "npm --prefix apps/api test"]
+    },
+    {
+      "name": "web",
+      "path": "apps/web",
+      "insights": "apps/web/INSIGHTS.md",
+      "specsDir": "apps/web/specs",
+      "checks": ["npm --prefix apps/web run typecheck", "npm --prefix apps/web run lint", "npm --prefix apps/web test"]
+    }
+  ],
+  "protectedPaths": ["**/package-lock.json", "**/pnpm-lock.yaml", "**/migrations/**", "**/vendor/**"],
+  "forbiddenCommands": ["db:migrate"],
+  "reviewBundleExcludes": ["docs/plans", "**/package-lock.json", "**/pnpm-lock.yaml"]
+}

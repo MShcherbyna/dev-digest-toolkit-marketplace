@@ -1,0 +1,10 @@
+{
+  "name": "research-tools",
+  "version": "1.0.0",
+  "description": "A read-only researcher agent that answers questions about the current repository or the web with a cited, structured report.",
+  "author": { "name": "Maksym Shcherbyna", "url": "https://github.com/MShcherbyna" },
+  "license": "MIT",
+  "homepage": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace/tree/main/plugins/research-tools",
+  "repository": "https://github.com/MShcherbyna/dev-digest-toolkit-marketplace",
+  "keywords": ["research", "researcher", "agent", "read-only", "documentation", "codebase-search", "дослідження", "пошук", "агент", "документація"]
+}
