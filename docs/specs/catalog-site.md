@@ -49,7 +49,7 @@ push у main ──► .github/workflows/pages.yml
 
 ### 3.1 Розміщення в репозиторії
 
-Сайт — окремий самодостатній проєкт у `site/`, який не змішується з маркетплейсом: власний `package.json`, генератор даних, тести й фікстури. Файли маркетплейсу він лише читає. Поза `site/` змінено тільки `pages.yml`, job `site` у `validate.yml`, перевірку `keywords` у валідаторі, `.gitignore` і документацію.
+Сайт — окремий самодостатній проєкт у `site/`, який не змішується з маркетплейсом: власний `package.json`, генератор даних, тести й фікстури. Файли маркетплейсу він лише читає. Поза `site/` змінено тільки `pages.yml`, окремий workflow `site.yml`, перевірку `keywords` у валідаторі, `.gitignore` і документацію.
 
 ```
 site/
@@ -299,9 +299,14 @@ site/
 - Усі actions закріплені за SHA з коментарем-версією, як у `validate.yml`.
 - У налаштуваннях репозиторію: Settings → Pages → Source: **GitHub Actions**.
 
-### 7.2 Перевірка в `validate.yml`
+### 7.2 Перевірка: `.github/workflows/site.yml`
 
-Job `site`: typecheck, юніт-тести, `npm run build` на реальному каталозі та E2E на демо-фікстурі (див. [§8](#8-тестування)) на кожен PR. Зламаний генератор чи сайт виявляються до мержу, а не під час деплою. Додати `site` до обов'язкових status checks у ruleset.
+Окремий workflow **Catalog site**, не змішаний із **Validate marketplace** (перевірки структури плагінів). Запускається на кожен PR і push у `main` без фільтра шляхів, щоб обов'язкові перевірки ніколи не зависали в стані «очікується». Два jobs, видимі в UI як окремі перевірки:
+
+- `site-build`: typecheck, юніт-тести, `npm run build` на реальному каталозі. Ламається, якщо новий плагін зламав генератор.
+- `site-e2e`: Playwright на демо-фікстурі (див. [§8](#8-тестування)); при падінні скріншоти й трейси завантажуються як артефакт `playwright-results`.
+
+Обидва додаються до обов'язкових status checks у ruleset для `main`.
 
 ### 7.3 Поведінка генератора
 
@@ -333,5 +338,5 @@ Job `site`: typecheck, юніт-тести, `npm run build` на реально�
 4. ✅ Пошук і картки + Copy install (фічі 1, 2).
 5. ✅ Detail-view (фіча 3).
 6. ✅ Stats, What's new, онбординг (фічі 7, 6, 8).
-7. ✅ `pages.yml`, job `site` у `validate.yml`, E2E, README.
-8. ⏳ Увімкнути Pages (Settings → Pages → Source: GitHub Actions) і додати `site` до обов'язкових status checks.
+7. ✅ `pages.yml`, workflow `site.yml` (`site-build`, `site-e2e`), E2E, README.
+8. ⏳ Увімкнути Pages (Settings → Pages → Source: GitHub Actions) і додати `site-build` та `site-e2e` до обов'язкових status checks.
