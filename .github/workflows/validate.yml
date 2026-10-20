@@ -1,0 +1,61 @@
+name: Validate marketplace
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CLAUDE_CODE_VERSION: 2.1.304
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # version-bump diff against the base branch, gitleaks history
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+
+      - name: Structural linter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            node scripts/validate-marketplace.mjs --base "origin/$BASE_REF"
+          else
+            node scripts/validate-marketplace.mjs
+          fi
+
+      - name: Install Claude Code CLI
+        run: npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+
+      # The marketplace is validated without --strict: an empty catalog is a warning.
+      # Every plugin is validated with --strict.
+      - name: claude plugin validate
+        env:
+          DISABLE_AUTOUPDATER: '1'
+        run: |
+          claude plugin validate .
+          for dir in plugins/*/; do
+            [ -d "$dir" ] || continue
+            claude plugin validate "$dir" --strict
+          done
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: 'false'
