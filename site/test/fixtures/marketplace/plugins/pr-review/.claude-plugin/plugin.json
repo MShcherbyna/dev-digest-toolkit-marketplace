@@ -1,0 +1,14 @@
+{
+  "name": "pr-review",
+  "displayName": "PR Review",
+  "version": "1.2.0",
+  "description": "Reviews pull requests: diff analysis, a review checklist, a reviewer agent and a guard hook.",
+  "author": { "name": "Platform Team" },
+  "license": "MIT",
+  "homepage": "https://example.com/pr-review",
+  "keywords": ["review", "pull-request", "code-review", "рев'ю", "код-рев'ю"],
+  "userConfig": {
+    "github_token": { "description": "Token for reading PR metadata", "sensitive": true },
+    "max_files": { "description": "Maximum files per review" }
+  }
+}

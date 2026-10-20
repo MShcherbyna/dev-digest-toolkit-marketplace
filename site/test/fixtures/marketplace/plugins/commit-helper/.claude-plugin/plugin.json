@@ -1,0 +1,8 @@
+{
+  "name": "commit-helper",
+  "version": "0.3.0",
+  "description": "Generates conventional commit messages from the staged diff and lints them before commit.",
+  "author": { "name": "DevEx" },
+  "license": "MIT",
+  "keywords": ["git", "commits", "conventional-commits", "коміти"]
+}

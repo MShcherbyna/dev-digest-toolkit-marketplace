@@ -4,3 +4,11 @@ __MACOSX/
 node_modules/
 *.log
 .claude/settings.local.json
+
+# Catalog site (site/): build output and generated data
+site/dist/
+site/dist-e2e/
+site/public/data/
+site/public/feed.xml
+site/test-results/
+site/playwright-report/

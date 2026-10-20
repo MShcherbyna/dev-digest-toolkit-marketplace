@@ -1,0 +1,28 @@
+{
+  "name": "dev-digest-toolkit",
+  "description": "Claude Code plugins from the Dev Digest toolkit.",
+  "owner": {
+    "name": "Maksym Shcherbyna"
+  },
+  "plugins": [
+    {
+      "name": "commit-helper",
+      "source": "./plugins/commit-helper",
+      "description": "Conventional commit messages from the staged diff."
+    },
+    {
+      "name": "docs-writer",
+      "source": "./plugins/docs-writer",
+      "description": "Writes and reviews documentation.",
+      "dependencies": [
+        "pr-review"
+      ]
+    },
+    {
+      "name": "pr-review",
+      "source": "./plugins/pr-review",
+      "description": "Pull request review skills, agent and hooks.",
+      "category": "code-review"
+    }
+  ]
+}

@@ -68,6 +68,7 @@ Add the plugin to `.claude-plugin/marketplace.json`, keeping entries sorted by `
 
 - Required here: `name`, `version` (SemVer), `description`, `author.name`, `license` (SPDX id).
 - `homepage`, if set, must be a valid URL: an invalid one stops the plugin from loading.
+- `keywords`: search terms in English **and** Ukrainian, e.g. `["review", "pull-request", "рев'ю"]`. The [catalog site](../site/README.md) matches Ukrainian queries through them, since descriptions are in English; skills and agents inherit their plugin's keywords. The linter warns when `keywords` is missing.
 - Component keys behave differently. `commands`, `agents`, `outputStyles` **replace** the default directory scan. `skills` **adds** to it. `hooks`, `mcpServers`, `lspServers` **merge** with the files.
 - Component paths are relative to the plugin root, start with `./`, and use forward slashes.
 - Do not list `hooks/hooks.json` in `hooks`: it loads automatically.
